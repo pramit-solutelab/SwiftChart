@@ -13,7 +13,7 @@ public protocol ChartDelegate: class {
     Tells the delegate that the specified chart has been touched.
 
     - parameter chart: The chart that has been touched.
-    - parameter indexes: Each element of this array contains the index of the data that has been touched, one for each 
+    - parameter indexes: Each element of this array contains the index of the data that has been touched, one for each
       series. If the series hasn't been touched, its index will be nil.
     - parameter x: The value on the x-axis that has been touched.
     - parameter left: The distance from the left side of the chart.
@@ -22,7 +22,7 @@ public protocol ChartDelegate: class {
     func didTouchChart(_ chart: Chart, indexes: [Int?], x: Double, left: CGFloat)
 
     /**
-    Tells the delegate that the user finished touching the chart. The user will 
+    Tells the delegate that the user finished touching the chart. The user will
     "finish" touching the chart only swiping left/right outside the chart.
 
     - parameter chart: The chart that has been touched.
@@ -30,8 +30,8 @@ public protocol ChartDelegate: class {
     */
     func didFinishTouchingChart(_ chart: Chart)
     /**
-     Tells the delegate that the user ended touching the chart. The user 
-     will "end" touching the chart whenever the touchesDidEnd method is 
+     Tells the delegate that the user ended touching the chart. The user
+     will "end" touching the chart whenever the touchesDidEnd method is
      being called.
      
      - parameter chart: The chart that has been touched.
@@ -65,15 +65,13 @@ open class Chart: UIControl {
     Series to display in the chart.
     */
     open var series: [ChartSeries] = [] {
-      didSet {
-        DispatchQueue.main.async {
-          self.setNeedsDisplay()
+        didSet {
+            setNeedsDisplay()
         }
-      }
     }
 
     /**
-    The values to display as labels on the x-axis. You can format these values  with the `xLabelFormatter` attribute. 
+    The values to display as labels on the x-axis. You can format these values  with the `xLabelFormatter` attribute.
     As default, it will display the values of the series which has the most data.
     */
     open var xLabels: [Double]?
@@ -127,7 +125,7 @@ open class Chart: UIControl {
     The color used for the labels.
     */
     @IBInspectable
-    open var labelColor: UIColor = UIColor.black
+    open var labelColor: UIColor = UIColor.black.withAlphaComponent(0.4)
 
     /**
     Color for the axes.
@@ -344,9 +342,9 @@ open class Chart: UIControl {
                 if series.line {
                     drawLine(scaledXValues, yValues: scaledYValues, seriesIndex: index)
                 }
-                if series.area {
-                    drawArea(scaledXValues, yValues: scaledYValues, seriesIndex: index)
-                }
+//                if series.area {
+//                    drawArea(scaledXValues, yValues: scaledYValues, seriesIndex: index)
+//                }
             })
         }
 
@@ -465,10 +463,18 @@ open class Chart: UIControl {
         // YValues are "reverted" from top to bottom, so 'above' means <= level
         let isAboveZeroLine = yValues.max()! <= self.scaleValueOnYAxis(series[seriesIndex].colors.zeroLevel)
         let path = CGMutablePath()
-        path.move(to: CGPoint(x: CGFloat(xValues.first!), y: CGFloat(yValues.first!)))
+        var xvalue = [Double]()
+        xvalue = xValues
+        xvalue[0] = xvalue[0] + 50
+        
+        path.move(to: CGPoint(x: CGFloat(xvalue.first!), y: CGFloat(yValues.first!)))
+//        path.move(to: CGPoint(x: CGFloat(xValues.first!), y: CGFloat(yValues.first!)))
+//        xvalue = xValues
+//        xvalue[0] = xvalue[0] + 20
+        
         for i in 1..<yValues.count {
             let y = yValues[i]
-            path.addLine(to: CGPoint(x: CGFloat(xValues[i]), y: CGFloat(y)))
+            path.addLine(to: CGPoint(x: CGFloat(xvalue[i]), y: CGFloat(y)))
         }
 
         let lineLayer = CAShapeLayer()
@@ -527,9 +533,9 @@ open class Chart: UIControl {
         context.strokePath()
 
         // horizontal axis at the top
-        context.move(to: CGPoint(x: CGFloat(0), y: CGFloat(0)))
-        context.addLine(to: CGPoint(x: CGFloat(drawingWidth), y: CGFloat(0)))
-        context.strokePath()
+//        context.move(to: CGPoint(x: CGFloat(0), y: CGFloat(0)))
+//        context.addLine(to: CGPoint(x: CGFloat(drawingWidth), y: CGFloat(0)))
+//        context.strokePath()
 
         // horizontal axis when y = 0
         if min.y < 0 && max.y > 0 {
@@ -551,6 +557,7 @@ open class Chart: UIControl {
     }
 
     fileprivate func drawLabelsAndGridOnXAxis() {
+        
         let context = UIGraphicsGetCurrentContext()!
         context.setStrokeColor(gridColor.cgColor)
         context.setLineWidth(0.5)
@@ -572,11 +579,11 @@ open class Chart: UIControl {
 
             // Add vertical grid for each label, except axes on the left and right
 
-            if x != 0 && x != drawingWidth {
-                context.move(to: CGPoint(x: x, y: CGFloat(0)))
-                context.addLine(to: CGPoint(x: x, y: bounds.height))
-                context.strokePath()
-            }
+//            if x != 0 && x != drawingWidth {
+//                context.move(to: CGPoint(x: x, y: CGFloat(0)))
+//                context.addLine(to: CGPoint(x: x, y: bounds.height))
+//                context.strokePath()
+//            }
 
             if xLabelsSkipLast && isLastLabel {
                 // Do not add label at the most right position
@@ -637,7 +644,7 @@ open class Chart: UIControl {
         }
 
         let scaled = scaleValuesOnYAxis(labels)
-        let padding: CGFloat = 5
+        let padding: CGFloat = 10
         let zero = CGFloat(getZeroValueOnYAxis(zeroLevel: 0))
 
         scaled.enumerated().forEach { (i, value) in
@@ -849,3 +856,4 @@ extension Sequence where Element == Double {
         return self.max() ?? 0.0
     }
 }
+
